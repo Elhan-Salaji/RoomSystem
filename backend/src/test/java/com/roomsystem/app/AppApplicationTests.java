@@ -1,4 +1,4 @@
-package com.rommsystem.app;
+package com.roomsystem.app;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
