@@ -7,10 +7,6 @@ assignees: ''
 
 ---
 
-* Title: Template for Issues
-
-Example:
-
 _Description of given issue._
 
 ## Tasks
