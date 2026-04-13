@@ -1,3 +1,8 @@
 spring:
   application:
-    name: app
+    name: roomsystem
+
+influxdb:
+  url: http://localhost:8181
+  database: roomsystem
+  token: ""
