@@ -19,7 +19,12 @@ from anthropic import Anthropic
 
 REPO = os.environ["GITHUB_REPOSITORY"]
 OWNER, REPO_NAME = REPO.split("/", 1)
-ISSUE_NUMBER = int(os.environ["ISSUE_NUMBER"])
+
+_issue_number_raw = os.environ.get("ISSUE_NUMBER", "")
+if not _issue_number_raw:
+    print("No ISSUE_NUMBER provided — skipping (not triggered by an issue event).")
+    sys.exit(0)
+ISSUE_NUMBER = int(_issue_number_raw)
 ISSUE_TITLE = os.environ.get("ISSUE_TITLE", "")
 ISSUE_BODY = os.environ.get("ISSUE_BODY", "")
 ISSUE_NODE_ID = os.environ.get("ISSUE_NODE_ID", "")
