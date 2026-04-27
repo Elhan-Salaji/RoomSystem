@@ -12,7 +12,7 @@ permissions:
 jobs:
   manage-issue:
     runs-on: ubuntu-latest
-    if: github.event.issue.user.type != 'Bot'
+    if: github.event_name == 'issues' && github.event.issue.user.type != 'Bot'
     steps:
       - uses: actions/checkout@v4
 
