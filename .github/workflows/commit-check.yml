@@ -1,0 +1,30 @@
+name: Commit Message Check
+
+on:
+  push:
+    branches-ignore: [main]
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+permissions:
+  contents: read
+
+jobs:
+  check-commits:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Validate commit messages
+        run: python .github/scripts/check_commits.py
+        env:
+          GITHUB_EVENT_NAME: ${{ github.event_name }}
+          BEFORE_SHA: ${{ github.event.before }}
+          AFTER_SHA: ${{ github.sha }}
+          GITHUB_BASE_REF: ${{ github.base_ref }}
