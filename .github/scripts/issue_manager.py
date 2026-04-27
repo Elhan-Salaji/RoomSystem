@@ -24,10 +24,16 @@ ISSUE_TITLE = os.environ.get("ISSUE_TITLE", "")
 ISSUE_BODY = os.environ.get("ISSUE_BODY", "")
 ISSUE_NODE_ID = os.environ.get("ISSUE_NODE_ID", "")
 GH_TOKEN = os.environ["GITHUB_TOKEN"]
+GH_PAT = os.environ.get("GH_PAT") or GH_TOKEN  # PAT with project scope for Projects v2
 ANTHROPIC_KEY = os.environ["ANTHROPIC_API_KEY"]
 
 GH_HEADERS = {
     "Authorization": f"Bearer {GH_TOKEN}",
+    "Accept": "application/vnd.github+json",
+    "X-GitHub-Api-Version": "2022-11-28",
+}
+GH_PROJECT_HEADERS = {
+    "Authorization": f"Bearer {GH_PAT}",
     "Accept": "application/vnd.github+json",
     "X-GitHub-Api-Version": "2022-11-28",
 }
@@ -58,7 +64,7 @@ def gh_post(path: str, data: dict) -> Any:
 def graphql(query: str, variables: dict | None = None) -> dict:
     r = requests.post(
         "https://api.github.com/graphql",
-        headers={**GH_HEADERS, "Accept": "application/json"},
+        headers={**GH_PROJECT_HEADERS, "Accept": "application/json"},
         json={"query": query, "variables": variables or {}},
     )
     r.raise_for_status()
