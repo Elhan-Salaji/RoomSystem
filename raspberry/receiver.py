@@ -2,16 +2,24 @@ import serial
 import os
 import logging
 import sys
+import struct
+
+from requests.compat import integer_types
 
 # Configuration for the AOP 6m sensor
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 CONFIG_FILE = os.path.join(BASE_DIR, "chirp_configs", "AOP_6m_default.cfg")
 
 # Serial port settings (adjust as needed for system)
+# COM Ports are the actual physical ports on your device
+# BAUD -> how many bits are transferred per second. Needs to be on receiver and sender the same
+
 CFG_PORT = "COM3"
 DATA_PORT = "COM4"
 CFG_BAUD = 115200
 DATA_BAUD = 921600
+
+MAGIC_WORD = b'\x02\x01\x04\x03\x06\x05\x08\x07'
 
 # Set up logging
 logging.basicConfig(
@@ -46,6 +54,27 @@ def send_config(cfg_port, config_file):
                     break
 
             log.info(f"Sent: {line.strip()} | Response: {response.strip()}")
+
+def read_frame(data_port):
+        buffer = bytearray()
+        while True:
+                byte = data_port.read(1)
+                buffer += byte
+                if buffer[-8:] == MAGIC_WORD:
+                    print("Magic word found")
+
+                    # Empty buffer to save memory
+                    buffer = bytearray()
+
+                    header_bytes = data_port.read(32)
+                    (version,
+                     total_length,
+                     platform,
+                     frame_num,
+                     time_cpu,
+                     num_detected,
+                     num_tlvs,
+                     sub_frame) = struct.unpack('8I', header_bytes)
 
 # Main execution
 if __name__ == '__main__':
