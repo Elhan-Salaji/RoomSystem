@@ -3,8 +3,6 @@ name: Commit Message Check
 on:
   push:
     branches-ignore: [main]
-  pull_request:
-    types: [opened, synchronize, reopened]
 
 permissions:
   contents: read
@@ -25,6 +23,5 @@ jobs:
         run: python .github/scripts/check_commits.py
         env:
           GITHUB_EVENT_NAME: ${{ github.event_name }}
-          BEFORE_SHA: ${{ github.event.before }}
-          AFTER_SHA: ${{ github.sha }}
+          COMMIT_SHA: ${{ github.sha }}
           GITHUB_BASE_REF: ${{ github.base_ref }}
