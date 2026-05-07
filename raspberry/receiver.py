@@ -10,6 +10,7 @@ CONFIG_FILE = os.path.join(BASE_DIR, "chirp_configs", "AOP_6m_default.cfg")
 
 # Serial port settings loaded from config.py
 # Override via environment variables if needed for different device than raspberry pi(e.g. SERIAL_CFG_PORT=COM3 on Windows)
+sys.path.insert(0, BASE_DIR)
 from config import (
     SERIAL_CFG_PORT, SERIAL_DATA_PORT,
     SERIAL_CFG_BAUD, SERIAL_DATA_BAUD
