@@ -13,6 +13,9 @@ public class Receiver {
         this.sensorDataService = sensorDataService;
     }
 
+    /**
+     * Listens for incoming sensor data via STOMP and forwards it to the service.
+     */
     @MessageMapping("/data")
     public void receive(SensorData data) {
         if (data == null) return;
