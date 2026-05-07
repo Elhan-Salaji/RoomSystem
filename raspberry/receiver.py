@@ -8,13 +8,12 @@ import struct
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 CONFIG_FILE = os.path.join(BASE_DIR, "chirp_configs", "AOP_6m_default.cfg")
 
-# Serial port settings (adjust as needed for system)
-# COM Ports are the actual physical ports on your device
-# BAUD -> how many bits are transferred per second. Needs to be on receiver and sender the same
-CFG_PORT = "COM3"
-DATA_PORT = "COM4"
-CFG_BAUD = 115200
-DATA_BAUD = 921600
+# Serial port settings loaded from config.py
+# Override via environment variables if needed for different device than raspberry pi(e.g. SERIAL_CFG_PORT=COM3 on Windows)
+from config import (
+    SERIAL_CFG_PORT, SERIAL_DATA_PORT,
+    SERIAL_CFG_BAUD, SERIAL_DATA_BAUD
+)
 
 # Magic word for when Frame starts. Refer to the User Guide for details on Frame Structure and Header
 MAGIC_WORD = b'\x02\x01\x04\x03\x06\x05\x08\x07'
@@ -38,8 +37,8 @@ log = logging.getLogger(__name__)
 
 # Open the serial ports for configuration and data
 def open_ports():
-    cfg_port = serial.Serial(CFG_PORT, CFG_BAUD, timeout=1)
-    data_port = serial.Serial(DATA_PORT, DATA_BAUD, timeout=1)
+    cfg_port = serial.Serial(SERIAL_CFG_PORT, SERIAL_CFG_BAUD, timeout=1)
+    data_port = serial.Serial(SERIAL_DATA_PORT, SERIAL_DATA_BAUD, timeout=1)
     return cfg_port, data_port
 
 
