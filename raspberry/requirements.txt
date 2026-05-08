@@ -1,0 +1,2 @@
+pyserial==3.5
+stomp.py==8.1.2
