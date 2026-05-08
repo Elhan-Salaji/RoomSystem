@@ -4,6 +4,8 @@ server:
 spring:
   application:
     name: occupi
+  profiles:
+    active: dev
 
 influxdb:
   url: http://localhost:8181
