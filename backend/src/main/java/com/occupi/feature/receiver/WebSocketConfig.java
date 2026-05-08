@@ -118,12 +118,20 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
         // Raw WebSocket endpoint for native clients (Raspberry Pi / stomp.py)
         registry
                 .addEndpoint("/ws")
-                .setAllowedOrigins("*");
+                .setAllowedOrigins(
+                        "http://localhost:5173",
+                        "http://localhost:3000",
+                        "https://occupi.mi.hdm-stuttgart.de"
+                );
 
         // SockJS endpoint for browser clients
         registry
                 .addEndpoint("/ws/occupancy")
-                .setAllowedOrigins("*")  // In production, specify actual client origins
+                .setAllowedOrigins(
+                        "http://localhost:5173",
+                        "http://localhost:3000",
+                        "https://occupi.mi.hdm-stuttgart.de"
+                )
                 .withSockJS();
     }
 

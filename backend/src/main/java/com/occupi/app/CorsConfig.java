@@ -21,8 +21,9 @@ public class CorsConfig {
             public void addCorsMappings(CorsRegistry registry) {
                 registry.addMapping("/**")
                         .allowedOrigins(
-                                "http://localhost:5173",  // Vite dev server (default)
-                                "http://localhost:3000"   // alternative dev
+                                "http://localhost:5173",               // Vite dev server (default)
+                                "http://localhost:3000",               // alternative dev
+                                "https://occupi.mi.hdm-stuttgart.de"  // production
                         )
                         .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
                         .allowedHeaders("*")
