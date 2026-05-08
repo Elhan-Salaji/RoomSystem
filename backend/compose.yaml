@@ -1,7 +1,7 @@
 services:
   influxdb3:
     image: influxdb:3-core
-    container_name: roomsystem-influxdb3
+    container_name: occupi-influxdb3
     ports:
       - "8181:8181"
     volumes:
