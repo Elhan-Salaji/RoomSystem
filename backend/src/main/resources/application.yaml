@@ -6,6 +6,9 @@ spring:
     name: occupi
   profiles:
     active: dev
+  docker:
+    compose:
+      enabled: false
 
 influxdb:
   url: http://localhost:8181
