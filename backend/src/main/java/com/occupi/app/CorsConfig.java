@@ -22,8 +22,7 @@ public class CorsConfig {
                 registry.addMapping("/**")
                         .allowedOrigins(
                                 "http://localhost:5173",  // Vite dev server (default)
-                                "http://localhost:3000", // alternative dev
-                                "http://localhost:8181" // InfluxDB
+                                "http://localhost:3000"   // alternative dev
                         )
                         .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
                         .allowedHeaders("*")
