@@ -28,29 +28,11 @@ def is_valid(message: str) -> bool:
 
 
 def get_commit_messages() -> list[str]:
-    event = os.environ.get("GITHUB_EVENT_NAME", "push")
-
-    if event == "pull_request":
-        base = os.environ.get("GITHUB_BASE_REF", "develop")
-        result = subprocess.run(
-            ["git", "log", "--format=%s", f"origin/{base}..HEAD"],
-            capture_output=True, text=True, check=False,
-        )
-    else:
-        before = os.environ.get("BEFORE_SHA", "")
-        after = os.environ.get("AFTER_SHA", "HEAD")
-        null_sha = "0" * 40
-        if not before or before == null_sha:
-            result = subprocess.run(
-                ["git", "log", "--format=%s", "-5"],
-                capture_output=True, text=True, check=False,
-            )
-        else:
-            result = subprocess.run(
-                ["git", "log", "--format=%s", f"{before}..{after}"],
-                capture_output=True, text=True, check=False,
-            )
-
+    sha = os.environ.get("COMMIT_SHA", "HEAD")
+    result = subprocess.run(
+        ["git", "log", "--format=%s", "-1", sha],
+        capture_output=True, text=True, check=False,
+    )
     return [line for line in result.stdout.strip().splitlines() if line.strip()]
 
 

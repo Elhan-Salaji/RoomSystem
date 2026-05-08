@@ -1,0 +1,5 @@
+# Production profile — activated via SPRING_PROFILES_ACTIVE=prod on the server.
+# SecurityConfig is active in this profile (all requests require authentication).
+logging:
+  level:
+    com.occupi: INFO

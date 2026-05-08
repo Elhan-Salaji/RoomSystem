@@ -1,8 +1,20 @@
+server:
+  port: 8080
+
 spring:
   application:
-    name: roomsystem
+    name: occupi
+  profiles:
+    active: dev
+  docker:
+    compose:
+      enabled: false
 
 influxdb:
   url: http://localhost:8181
-  database: roomsystem
+  database: occupi
   token: ""
+
+logging:
+  level:
+    com.occupi: DEBUG

@@ -12,7 +12,7 @@ SERIAL_DATA_BAUD = 921600
 
 # --- Backend WebSocket ---
 BACKEND_HOST    = os.getenv("BACKEND_HOST",    "localhost")
-BACKEND_PORT    = os.getenv("BACKEND_PORT",    "8000")
+BACKEND_PORT    = os.getenv("BACKEND_PORT",    "8080")
 BACKEND_WS_PATH = os.getenv("BACKEND_WS_PATH", "/ws/occupancy")
 BACKEND_WS_URL  = f"ws://{BACKEND_HOST}:{BACKEND_PORT}{BACKEND_WS_PATH}"
 
