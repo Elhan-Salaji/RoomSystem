@@ -1,5 +1,6 @@
 package com.occupi.feature.receiver;
 
+import com.influxdb.v3.client.InfluxDBClient;
 import com.occupi.app.AppApplication;
 import com.occupi.feature.receiver.dto.SensorData;
 import org.junit.jupiter.api.BeforeEach;
@@ -60,6 +61,12 @@ class ReceiverIntegrationTest {
 
     @LocalServerPort
     int port;
+
+    // Prevents the real InfluxDBClient from being instantiated during context load.
+    // The influxdb3-java client uses Apache Arrow + Netty internally, which causes
+    // an UnsupportedOperationException on initialization in the test environment.
+    @MockitoBean
+    InfluxDBClient influxDBClient;
 
     // Mock the service so we can verify it was called without needing a real DB
     @MockitoBean
