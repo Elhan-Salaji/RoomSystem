@@ -1,12 +1,9 @@
-from sensor.receiver import open_ports, send_config, read_frame, CONFIG_FILE
-from sender.processor import map_to_occupancy
 import json
 import logging
 import queue
 import sys
 import threading
 import time
-
 import serial
 import stomp
 
@@ -14,8 +11,11 @@ from config import (
     BACKEND_HOST, BACKEND_PORT,
     STOMP_DESTINATION,
     QUEUE_MAX_SIZE,
-    WS_RECONNECT_DELAY, WS_MAX_RETRIES,
+    WS_RECONNECT_DELAY, WS_MAX_RETRIES, BACKEND_WS_PATH,
 )
+from sensor.receiver import open_ports, send_config, read_frame, CONFIG_FILE
+from sender.processor import map_to_occupancy
+from mock_data import mock_sensor_loop
 
 logging.basicConfig(
     level=logging.INFO,
@@ -60,9 +60,10 @@ def _sender_loop() -> None:
     Maintains the STOMP connection and sends frames from the queue.
     Reconnects automatically on failure.
     """
-    conn = stomp.Connection(
+    conn = stomp.WSStompConnection(
         host_and_ports=[(BACKEND_HOST, BACKEND_PORT)],
         heartbeats=(25000, 25000),
+        ws_path=BACKEND_WS_PATH,
     )
 
     retries = 0
@@ -94,25 +95,33 @@ def _sender_loop() -> None:
 
     log.error("Max retries reached. Sender thread exiting.")
 
+
 def start_sender() -> None:
     """Starts the sender loop in a daemon thread."""
     t = threading.Thread(target=_sender_loop, daemon=True)
     t.start()
     log.info("Sender thread started.")
 
+
+# Set to False for real sensor data
+USE_MOCK = True
 # Main execution
 if __name__ == '__main__':
     cfg_port = None
     data_port = None
+
     try:
         start_sender()
-        cfg_port, data_port = open_ports()
-        send_config(cfg_port, CONFIG_FILE)
 
-        while True:
-            frame_num, people_count = read_frame(data_port)
-            log.info(f"Frame {frame_num}: Detected {people_count} people")
-            enqueue_frame({"frameNum": frame_num, "numDetectedTracks": people_count})
+        if USE_MOCK:
+            mock_sensor_loop(enqueue_frame)
+        else:
+            cfg_port, data_port = open_ports()
+            send_config(cfg_port, CONFIG_FILE)
+            while True:
+                frame_num, people_count = read_frame(data_port)
+                log.info(f"Frame {frame_num}: Detected {people_count} people")
+                enqueue_frame({"frameNum": frame_num, "numDetectedTracks": people_count})
 
     except serial.SerialException as e:
         log.error(f"Error: Couldn't find sensor. {e}")
