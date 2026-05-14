@@ -16,6 +16,7 @@ from config import (
 from sensor.receiver import open_ports, send_config, read_frame, CONFIG_FILE
 from sender.processor import map_to_occupancy
 from mock_data import mock_sensor_loop
+from stomp import exception as stomp_exception
 
 logging.basicConfig(
     level=logging.INFO,
@@ -43,7 +44,7 @@ def enqueue_frame(frame: dict) -> None:
             pass
 
 
-def _connect(conn: stomp.Connection) -> bool:
+def _connect(conn: stomp.WSStompConnection) -> bool:
     """Attempts a single STOMP connect. Returns True on success."""
     try:
         conn.connect(wait=True)
@@ -88,7 +89,7 @@ def _sender_loop() -> None:
             log.debug(f"Sent: {payload}")
         except queue.Empty:
             continue  # nothing to send, check connection and wait
-        except stomp.exception.ConnectFailedException as e:
+        except stomp_exception.ConnectFailedException as e:
             log.warning(f"Connection lost: {e}. Reconnecting ...")
         except Exception as e:
             log.error(f"Unexpected sender error: {e}")
