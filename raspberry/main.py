@@ -103,6 +103,18 @@ def start_sender() -> None:
     t.start()
     log.info("Sender thread started.")
 
+def _queue_monitor_loop() -> None:
+    """Periodically logs the current queue length."""
+    while True:
+        log.info(f"Queue length: {_queue.qsize()}/{QUEUE_MAX_SIZE}")
+        time.sleep(10)
+
+
+def start_queue_monitor() -> None:
+    """Starts the queue monitor loop in a daemon thread."""
+    t = threading.Thread(target=_queue_monitor_loop, daemon=True)
+    t.start()
+    log.info("Queue monitor started.")
 
 # Set to False for real sensor data
 USE_MOCK = True
@@ -113,6 +125,7 @@ if __name__ == '__main__':
 
     try:
         start_sender()
+        start_queue_monitor()
 
         if USE_MOCK:
             mock_sensor_loop(enqueue_frame)
@@ -120,9 +133,11 @@ if __name__ == '__main__':
             cfg_port, data_port = open_ports()
             send_config(cfg_port, CONFIG_FILE)
             while True:
+                t_start = time.monotonic()
                 frame_num, people_count = read_frame(data_port)
-                log.info(f"Frame {frame_num}: Detected {people_count} people")
                 enqueue_frame({"frameNum": frame_num, "numDetectedTracks": people_count})
+                latency = (time.monotonic() - t_start) * 1000  # ms
+                log.info(f"Frame {frame_num}: Detected {people_count} people | Latency: {latency:.1f}ms")
 
     except serial.SerialException as e:
         log.error(f"Error: Couldn't find sensor. {e}")
