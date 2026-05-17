@@ -14,10 +14,12 @@ from config import (
     WS_RECONNECT_DELAY, WS_MAX_RETRIES, BACKEND_WS_PATH,
 )
 from sensor.receiver import open_ports, send_config, read_frame, CONFIG_FILE
+from sensor.metrics import ThroughputMetrics, start_metrics_monitor, log_snapshot
 from sender.processor import map_to_occupancy
 from mock_data import mock_sensor_loop
 from stomp import exception as stomp_exception
 
+# Logging configuration
 logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s %(levelname)s %(message)s',
@@ -26,7 +28,7 @@ logging.basicConfig(
 log = logging.getLogger(__name__)
 
 _queue: queue.Queue = queue.Queue(maxsize=QUEUE_MAX_SIZE)
-
+_metrics = ThroughputMetrics()
 
 def enqueue_frame(frame: dict) -> None:
     """
@@ -39,6 +41,7 @@ def enqueue_frame(frame: dict) -> None:
         try:
             _queue.get_nowait()  # drop oldest
             _queue.put_nowait(frame)
+            _metrics.record_dropped()
             log.warning("Queue full – oldest frame dropped.")
         except queue.Empty:
             pass
@@ -80,12 +83,15 @@ def _sender_loop() -> None:
 
         try:
             frame = _queue.get(timeout=1)
+            t_start = time.monotonic()
             payload = map_to_occupancy(frame)
             conn.send(
                 destination=STOMP_DESTINATION,
                 body=json.dumps(payload),
                 content_type="application/json",
             )
+            processing_ms = (time.monotonic() - t_start) * 1000
+            _metrics.record_sent(processing_ms)
             log.debug(f"Sent: {payload}")
         except queue.Empty:
             continue  # nothing to send, check connection and wait
@@ -103,18 +109,6 @@ def start_sender() -> None:
     t.start()
     log.info("Sender thread started.")
 
-def _queue_monitor_loop() -> None:
-    """Periodically logs the current queue length."""
-    while True:
-        log.info(f"Queue length: {_queue.qsize()}/{QUEUE_MAX_SIZE}")
-        time.sleep(10)
-
-
-def start_queue_monitor() -> None:
-    """Starts the queue monitor loop in a daemon thread."""
-    t = threading.Thread(target=_queue_monitor_loop, daemon=True)
-    t.start()
-    log.info("Queue monitor started.")
 
 # Set to False for real sensor data
 USE_MOCK = True
@@ -125,10 +119,14 @@ if __name__ == '__main__':
 
     try:
         start_sender()
-        start_queue_monitor()
+        start_metrics_monitor(_queue, _metrics)
 
         if USE_MOCK:
             mock_sensor_loop(enqueue_frame)
+            # wait for sender to drain the queue before logging final metrics
+            while not _queue.empty():
+                time.sleep(0.05)
+            log_snapshot(_queue, _metrics)
         else:
             cfg_port, data_port = open_ports()
             send_config(cfg_port, CONFIG_FILE)
